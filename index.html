@@ -15,8 +15,6 @@
             --accent-blue-hover: #0077ed;
             --accent-green: #34c759;
             --accent-red: #ff3b30;
-            --tiktok-pink: #fe2c55;
-            --tiktok-cyan: #25f4ee;
             --mono-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
@@ -77,7 +75,7 @@
         .logo-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
             margin-bottom: 8px;
         }
 
@@ -125,10 +123,12 @@
             padding: 13px 16px;
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            font-size: 14.5px;
+            font-size: 14px;
             outline: none;
             background: #ffffff;
             font-family: var(--mono-font);
+            direction: ltr;
+            text-align: right;
         }
 
         .input-box input:focus {
@@ -160,6 +160,7 @@
             color: var(--text-secondary);
             margin-bottom: 16px;
             padding: 0 4px;
+            line-height: 1.5;
         }
 
         .result-card {
@@ -187,8 +188,8 @@
         }
 
         .avatar {
-            width: 54px;
-            height: 54px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: #f0f0f2;
             object-fit: cover;
@@ -308,6 +309,9 @@
                 width: 100%;
                 justify-content: center;
             }
+            .input-box input {
+                text-align: start;
+            }
         }
     </style>
 </head>
@@ -335,12 +339,12 @@
         </div>
 
         <div class="input-box">
-            <input type="text" id="targetInput" placeholder="اكتب اليوزر (مثال: 5opk) أو المعرّف الرقمي (User ID)..." />
+            <input type="text" id="targetInput" placeholder="اكتب اليوزر (مثال: 5opk) أو الصق الرابط كاملاً..." />
             <button class="btn-lookup" id="btnLookup" onclick="runLookup()">
                 <span id="btnLookupText">تحليل الحساب</span>
             </button>
         </div>
-        <div class="input-hint" id="inputHint">💡 يمكنك وضع اسم المستخدم مباشرة أو رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.</div>
+        <div class="input-hint" id="inputHint">💡 يمكنك كتابة اسم المستخدم، لصق رابط الحساب كاملاً، أو إدخال رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.</div>
 
         <div class="result-card" id="resultCard">
             <div class="profile-header">
@@ -391,15 +395,15 @@
                 appTitle: 'فاحص ومحلل حسابات تيك توك',
                 securityText: 'فحص مصادر مفتوحة OSINT بدون سيرفر',
                 btnLookupText: 'تحليل الحساب',
-                inputPlaceholder: 'اكتب اليوزر (مثال: 5opk) أو المعرّف الرقمي (User ID)...',
-                inputHint: '💡 يمكنك وضع اسم المستخدم مباشرة أو رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.',
+                inputPlaceholder: 'اكتب اليوزر (مثال: 5opk) أو الصق الرابط كاملاً...',
+                inputHint: '💡 يمكنك كتابة اسم المستخدم، لصق رابط الحساب كاملاً، أو إدخال رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.',
                 lblCreatedAt: 'تاريخ وساعة الإنشاء الدقيقة',
                 lblAge: 'عمر الحساب التقديري',
                 lblLocation: 'الموقع والمنطقة الإقليمية',
                 lblUserId: 'المعرّف الرقمي (User ID)',
-                searching: 'جارِ استخراج البيانات...',
+                searching: 'جارِ تحليل الحساب...',
                 invalidId: 'معرّف غير صالح',
-                notFound: 'تعذر جلب تفاصيل الحساب تلقائياً، استخدم روابط التحري بالأسفل.',
+                notFound: 'لم يتم العثور على الحساب أو أنه محذوف/خاص.',
                 dorkProfile: 'فتح الملف الشخصي في TikTok',
                 dorkArch: 'استعراض أول ظهور في الأرشيف (Wayback Machine)',
                 dorkGoogle: 'فحص أقدم فهرسة وتوثيق عبر Google Dorks',
@@ -412,15 +416,15 @@
                 appTitle: 'TikTok Intelligence & Age Inspector',
                 securityText: '100% Client-Side Open-Source Intelligence',
                 btnLookupText: 'Analyze Profile',
-                inputPlaceholder: 'Enter username (e.g. 5opk) or User ID...',
-                inputHint: '💡 Enter username or 19-digit User ID to calculate registration epoch mathematically.',
+                inputPlaceholder: 'Enter username (e.g. 5opk) or full URL...',
+                inputHint: '💡 Enter username, paste full profile URL, or input numeric User ID to calculate registration epoch mathematically.',
                 lblCreatedAt: 'Exact Account Creation Date',
                 lblAge: 'Estimated Account Age',
                 lblLocation: 'Location & Region Gate',
                 lblUserId: 'Numeric User ID',
-                searching: 'Fetching data...',
+                searching: 'Analyzing profile...',
                 invalidId: 'Invalid Numeric ID',
-                notFound: 'Unable to auto-fetch profile, use direct links below.',
+                notFound: 'Account not found or deleted/private.',
                 dorkProfile: 'Open Direct TikTok Profile',
                 dorkArch: 'Check Earliest Snapshots (Wayback Machine)',
                 dorkGoogle: 'Find Earliest Google Indexation (OSINT Dork)',
@@ -448,6 +452,15 @@
             document.getElementById('lblUserId').innerText = t.lblUserId;
         }
 
+        // استخراج اسم المستخدم النظيف حتى لو تم إدخال رابط كامل
+        function extractCleanUsername(input) {
+            let clean = input.trim();
+            clean = clean.replace(/^(https?:\/\/)?(www\.)?tiktok\.com\/@?/, '');
+            clean = clean.replace(/^@/, '');
+            clean = clean.split('?')[0].split('/')[0];
+            return clean;
+        }
+
         function calculateAge(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -462,6 +475,7 @@
             return `${days} ${t.days}`;
         }
 
+        // فك تشفير أول 32 بت كـ Unix Epoch
         function decodeTikTokId(numericId) {
             try {
                 const idBigInt = BigInt(numericId);
@@ -477,7 +491,8 @@
         }
 
         async function runLookup() {
-            const query = document.getElementById('targetInput').value.trim().replace(/^@/, '');
+            const rawInput = document.getElementById('targetInput').value;
+            const query = extractCleanUsername(rawInput);
             if (!query) return;
 
             const t = i18n[currentLang];
@@ -489,20 +504,21 @@
 
             document.getElementById('resName').innerText = query;
             document.getElementById('resHandle').innerText = `@${query}`;
-            document.getElementById('resLocation').innerText = 'Global / TikTok Cluster';
+            document.getElementById('resLocation').innerText = '-';
             document.getElementById('resUserId').innerText = '-';
             document.getElementById('resVerified').style.display = 'none';
+            document.getElementById('resAvatar').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0z'/%3E%3C/svg%3E";
 
             buildDorks(query);
 
-            // 1. إذا كان المدخل معرّف رقمي مباشر
+            // 1. إذا كان المدخل رقم ID مباشر
             if (/^\d{16,21}$/.test(query)) {
                 const date = decodeTikTokId(query);
                 if (date) {
                     document.getElementById('resCreated').innerText = date.toLocaleString();
                     document.getElementById('resAge').innerText = calculateAge(date);
                     document.getElementById('resUserId').innerText = query;
-                    document.getElementById('resLocation').innerText = 'Decoded via TikTok Snowflake Timestamp';
+                    document.getElementById('resLocation').innerText = 'Decoded via Snowflake Timestamp';
                 } else {
                     document.getElementById('resCreated').innerText = t.invalidId;
                     document.getElementById('resAge').innerText = '-';
@@ -511,49 +527,42 @@
                 return;
             }
 
-            // 2. إذا كان المدخل اسم مستخدم (Username)
+            // 2. الاستعلام المباشر عبر TikWM API العام والمجاني
             try {
-                // جلب الصفحة العامة عبر بروكسي CORS آمن ومفتوح
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.tiktok.com/@${query}`)}`;
-                const response = await fetch(proxyUrl);
-                const data = await response.json();
-                const html = data.contents || "";
+                const res = await fetch(`https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(query)}`);
+                const json = await res.json();
 
-                // البحث عن authorId أو userId
-                const idMatch = html.match(/"authorId":"(\d+)"/) || html.match(/"userId":"(\d+)"/) || html.match(/"id":"(\d+)"/);
-                const nickMatch = html.match(/"nickname":"([^"]+)"/);
-                const isVerified = html.includes('"verified":true');
-
-                if (nickMatch) {
-                    document.getElementById('resName').innerText = nickMatch[1];
-                }
-                if (isVerified) {
-                    document.getElementById('resVerified').style.display = 'inline';
-                }
-
-                if (idMatch && idMatch[1]) {
-                    const userId = idMatch[1];
-                    document.getElementById('resUserId').innerText = userId;
+                if (json.code === 0 && json.data && json.data.user) {
+                    const u = json.data.user;
+                    const userId = u.id;
                     const date = decodeTikTokId(userId);
+
+                    document.getElementById('resName').innerText = u.nickname || query;
+                    document.getElementById('resHandle').innerText = `@${u.uniqueId || query}`;
+                    if (u.avatarLarger || u.avatarMedium || u.avatarThumb) {
+                        document.getElementById('resAvatar').src = u.avatarLarger || u.avatarMedium || u.avatarThumb;
+                    }
+                    if (u.verified) {
+                        document.getElementById('resVerified').style.display = 'inline';
+                    }
+
+                    document.getElementById('resUserId').innerText = userId;
+                    document.getElementById('resLocation').innerText = u.region ? `Region: ${u.region}` : 'Global Edge';
 
                     if (date) {
                         document.getElementById('resCreated').innerText = date.toLocaleString();
                         document.getElementById('resAge').innerText = calculateAge(date);
-                        document.getElementById('resLocation').innerText = 'TikTok Regional Edge Network';
                     } else {
                         document.getElementById('resCreated').innerText = t.notFound;
                         document.getElementById('resAge').innerText = '-';
                     }
                 } else {
-                    // في حال كان الحساب محمي بواسطة Cloudflare Challenge
-                    document.getElementById('resCreated').innerText = 'فحص عبر مؤشرات الأرشيف وGoogle Dorks';
-                    document.getElementById('resAge').innerText = 'انقر على روابط التحري بالأسفل';
-                    document.getElementById('resLocation').innerText = 'معتمد على ترويسات المنصة';
+                    throw new Error();
                 }
             } catch {
-                document.getElementById('resCreated').innerText = 'فحص عبر مؤشرات الأرشيف وGoogle Dorks';
-                document.getElementById('resAge').innerText = 'انقر على روابط التحري بالأسفل';
-                document.getElementById('resLocation').innerText = 'TikTok CDN';
+                document.getElementById('resCreated').innerText = t.notFound;
+                document.getElementById('resAge').innerText = '-';
+                document.getElementById('resLocation').innerText = 'N/A';
             } finally {
                 btn.innerText = t.btnLookupText;
                 card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
