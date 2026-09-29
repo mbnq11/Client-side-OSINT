@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-tag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Social OSINT & Account Age Checker</title>
+    <style>
+        :root {
+            --bg-body: #f5f5f7;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent-blue: #0071e3;
+            --accent-blue-hover: #0077ed;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+            --mono-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 760px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .lang-btn {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            padding: 6px 14px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 760px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .badge-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .security-badge {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(52, 199, 89, 0.35);
+            color: #248a3d;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 980px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .platform-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .platform-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip-btn {
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            border-color: var(--accent-blue);
+        }
+
+        .input-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .input-box input {
+            flex: 1;
+            padding: 13px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            font-size: 14.5px;
+            outline: none;
+            background: #ffffff;
+            font-family: var(--mono-font);
+        }
+
+        .input-box input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .btn-lookup {
+            background: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 13px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-lookup:hover {
+            background: var(--accent-blue-hover);
+        }
+
+        .result-card {
+            display: none;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 18px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #f0f0f2;
+            object-fit: cover;
+            border: 1px solid var(--card-border);
+        }
+
+        .user-title {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-handle {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-family: var(--mono-font);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .info-tile {
+            background: #fbfbfd;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .info-tile-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .info-tile-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .dorks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .dork-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fbfbfd;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12.5px;
+            text-decoration: none;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .dork-item:hover {
+            background: #f0f4f9;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer .email-link {
+            color: var(--text-secondary);
+            font-size: 12px;
+            direction: ltr;
+        }
+
+        @media (max-width: 520px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .input-box {
+                flex-direction: column;
+            }
+            .btn-lookup {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="font-weight: 700; font-size: 15px;">OSINT Studio</div>
+        <button class="lang-btn" id="langSwitch" onclick="toggleLanguage()">English</button>
+    </div>
+
+    <div class="app-container">
+        <div class="title-section">
+            <h1 id="appTitle">محلل تاريخ إنشاء الحسابات والمواقع</h1>
+            <div class="badge-wrapper">
+                <span class="security-badge" id="securityBadge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                    <span id="securityText">فحص مصادر مفتوحة OSINT بدون سيرفر</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="platform-chips">
+            <button class="chip-btn active" data-p="github" onclick="setPlatform('github', this)">GitHub</button>
+            <button class="chip-btn" data-p="reddit" onclick="setPlatform('reddit', this)">Reddit</button>
+            <button class="chip-btn" data-p="discord" onclick="setPlatform('discord', this)">Discord (ID)</button>
+            <button class="chip-btn" data-p="x" onclick="setPlatform('x', this)">X (Twitter)</button>
+            <button class="chip-btn" data-p="instagram" onclick="setPlatform('instagram', this)">Instagram</button>
+            <button class="chip-btn" data-p="telegram" onclick="setPlatform('telegram', this)">Telegram</button>
+            <button class="chip-btn" data-p="tiktok" onclick="setPlatform('tiktok', this)">TikTok</button>
+        </div>
+
+        <div class="input-box">
+            <input type="text" id="targetInput" placeholder="اكتب اسم المستخدم (Username)..." />
+            <button class="btn-lookup" id="btnLookup" onclick="runLookup()">تحليل الحساب</button>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="profile-header">
+                <img id="resAvatar" class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='%23ccc' viewBox='0 0 16 16'%3E%3Cpath d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z'/%3E%3C/svg%3E" alt="Avatar">
+                <div class="user-title">
+                    <div class="user-name" id="resName">-</div>
+                    <div class="user-handle" id="resHandle">-</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-tile">
+                    <div class="info-tile-label" id="lblCreatedAt">تاريخ وساعة الإنشاء الدقيقة</div>
+                    <div class="info-tile-val" id="resCreated" style="color: var(--accent-blue);">-</div>
+                </div>
+                <div class="info-tile">
+                    <div class="info-tile-label" id="lblAge">عمر الحساب التقديري</div>
+                    <div class="info-tile-val" id="resAge">-</div>
+                </div>
+                <div class="info-tile">
+                    <div class="info-tile-label" id="lblLocation">الموقع الجغرافي المسجل</div>
+                    <div class="info-tile-val" id="resLocation">-</div>
+                </div>
+                <div class="info-tile">
+                    <div class="info-tile-label" id="lblExtra">معلومات إضافية / المعرّف</div>
+                    <div class="info-tile-val" id="resExtra">-</div>
+                </div>
+            </div>
+
+            <div class="dorks-container" id="dorksBox"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div><a href="https://linkedin.com/in/mbnq" target="_blank" rel="noopener noreferrer">LinkedIn: mbnq</a></div>
+        <div><a class="email-link" href="mailto:mbnq1@outlook.com">mbnq1@outlook.com</a></div>
+    </div>
+
+    <script>
+        let currentLang = 'ar';
+        let currentPlatform = 'github';
+
+        const i18n = {
+            ar: {
+                langBtn: 'English',
+                appTitle: 'محلل تاريخ إنشاء الحسابات والمواقع',
+                securityText: 'فحص مصادر مفتوحة OSINT بدون سيرفر',
+                btnLookup: 'تحليل الحساب',
+                lblCreatedAt: 'تاريخ الإنشاء الدقيق',
+                lblAge: 'عمر الحساب التقديري',
+                lblLocation: 'الموقع الجغرافي المسجل',
+                lblExtra: 'معلومات إضافية / المعرّف',
+                phUsername: 'اكتب اسم المستخدم (Username)...',
+                phDiscord: 'أدخل معرف Discord الرقمي (Snowflake ID)...',
+                notFound: 'لم يتم العثور على الحساب أو الحساب خاص ومحمي.',
+                dorkArch: 'استعراض أول ظهور في الأرشيف الرقمي (Wayback Machine)',
+                dorkGoogle: 'فحص أقدم فهرسة للحساب عبر Google Dorking',
+                dorkProfile: 'فتح الملف الشخصي المباشر',
+                days: 'يوم',
+                years: 'سنة',
+                months: 'شهر'
+            },
+            en: {
+                langBtn: 'العربية',
+                appTitle: 'Social OSINT & Account Age Checker',
+                securityText: '100% Client-Side Open-Source Intelligence',
+                btnLookup: 'Analyze Account',
+                lblCreatedAt: 'Exact Account Creation Date',
+                lblAge: 'Estimated Account Age',
+                lblLocation: 'Registered Location',
+                lblExtra: 'Additional Meta / ID',
+                phUsername: 'Enter username (e.g. torvalds)...',
+                phDiscord: 'Enter Discord numeric Snowflake ID...',
+                notFound: 'Account not found or private/protected.',
+                dorkArch: 'Check earliest snapshots in Wayback Machine',
+                dorkGoogle: 'Search earliest Google indexation (OSINT Dork)',
+                dorkProfile: 'Open Direct Profile Page',
+                days: 'days',
+                years: 'years',
+                months: 'months'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            const t = i18n[currentLang];
+            document.getElementById('html-tag').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('html-tag').lang = currentLang;
+
+            document.getElementById('langSwitch').innerText = t.langBtn;
+            document.getElementById('appTitle').innerText = t.appTitle;
+            document.getElementById('securityText').innerText = t.securityText;
+            document.getElementById('btnLookup').innerText = t.btnLookup;
+            document.getElementById('lblCreatedAt').innerText = t.lblCreatedAt;
+            document.getElementById('lblAge').innerText = t.lblAge;
+            document.getElementById('lblLocation').innerText = t.lblLocation;
+            document.getElementById('lblExtra').innerText = t.lblExtra;
+
+            updatePlaceholder();
+        }
+
+        function setPlatform(p, btn) {
+            currentPlatform = p;
+            document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updatePlaceholder();
+        }
+
+        function updatePlaceholder() {
+            const input = document.getElementById('targetInput');
+            const t = i18n[currentLang];
+            input.placeholder = currentPlatform === 'discord' ? t.phDiscord : t.phUsername;
+        }
+
+        function calculateAge(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const years = Math.floor(diffDays / 365);
+            const months = Math.floor((diffDays % 365) / 30);
+            const days = diffDays % 30;
+
+            const t = i18n[currentLang];
+            if (years > 0) return `${years} ${t.years} • ${months} ${t.months}`;
+            if (months > 0) return `${months} ${t.months} • ${days} ${t.days}`;
+            return `${days} ${t.days}`;
+        }
+
+        async function runLookup() {
+            const query = document.getElementById('targetInput').value.trim().replace(/^@/, '');
+            if (!query) return;
+
+            const card = document.getElementById('resultCard');
+            const t = i18n[currentLang];
+
+            document.getElementById('resName').innerText = query;
+            document.getElementById('resHandle').innerText = `@${query} (${currentPlatform.toUpperCase()})`;
+            document.getElementById('resLocation').innerText = 'N/A';
+            document.getElementById('resExtra').innerText = '-';
+            document.getElementById('resAvatar').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0z'/%3E%3C/svg%3E";
+
+            buildDorks(query, currentPlatform);
+
+            if (currentPlatform === 'github') {
+                try {
+                    const res = await fetch(`https://api.github.com/users/${encodeURIComponent(query)}`);
+                    if (!res.ok) throw new Error();
+                    const data = await res.json();
+                    const created = new Date(data.created_at);
+                    document.getElementById('resAvatar').src = data.avatar_url;
+                    document.getElementById('resName').innerText = data.name || data.login;
+                    document.getElementById('resCreated').innerText = created.toLocaleString();
+                    document.getElementById('resAge').innerText = calculateAge(created);
+                    document.getElementById('resLocation').innerText = data.location || 'Not Specified';
+                    document.getElementById('resExtra').innerText = `Public Repos: ${data.public_repos} • Followers: ${data.followers}`;
+                } catch {
+                    document.getElementById('resCreated').innerText = t.notFound;
+                    document.getElementById('resAge').innerText = '-';
+                }
+            } else if (currentPlatform === 'reddit') {
+                try {
+                    const res = await fetch(`https://www.reddit.com/user/${encodeURIComponent(query)}/about.json`);
+                    if (!res.ok) throw new Error();
+                    const json = await res.json();
+                    const d = json.data;
+                    const created = new Date(d.created_utc * 1000);
+                    document.getElementById('resName').innerText = d.subreddit ? d.subreddit.title || d.name : d.name;
+                    document.getElementById('resCreated').innerText = created.toLocaleString();
+                    document.getElementById('resAge').innerText = calculateAge(created);
+                    document.getElementById('resLocation').innerText = 'Reddit Cloud / Global';
+                    document.getElementById('resExtra').innerText = `Karma: ${d.total_karma || 0} • Verified: ${d.has_verified_email ? 'Yes' : 'No'}`;
+                    if (d.icon_img) document.getElementById('resAvatar').src = d.icon_img.split('?')[0];
+                } catch {
+                    document.getElementById('resCreated').innerText = t.notFound;
+                    document.getElementById('resAge').innerText = '-';
+                }
+            } else if (currentPlatform === 'discord') {
+                try {
+                    const idBigInt = BigInt(query);
+                    const epoch = 1420070400000n;
+                    const timestamp = Number((idBigInt >> 22n) + epoch);
+                    const created = new Date(timestamp);
+                    if (isNaN(created.getTime())) throw new Error();
+                    document.getElementById('resCreated').innerText = created.toLocaleString();
+                    document.getElementById('resAge').innerText = calculateAge(created);
+                    document.getElementById('resLocation').innerText = 'Discord Decentralized Node';
+                    document.getElementById('resExtra').innerText = `Snowflake ID: ${query}`;
+                } catch {
+                    document.getElementById('resCreated').innerText = 'معرف غير صالح (Invalid Snowflake)';
+                    document.getElementById('resAge').innerText = '-';
+                }
+            } else {
+                document.getElementById('resCreated').innerText = 'فحص عبر مؤشرات الأرشيف وGoogle Dorks';
+                document.getElementById('resAge').innerText = 'انقر على روابط التحري بالأسفل';
+                document.getElementById('resLocation').innerText = 'معتمد على ترويسات المنصة';
+                document.getElementById('resExtra').innerText = `مستعلم OSINT لنظام: ${currentPlatform.toUpperCase()}`;
+            }
+
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function buildDorks(user, platform) {
+            const box = document.getElementById('dorksBox');
+            box.innerHTML = '';
+            const t = i18n[currentLang];
+
+            let targetUrl = '';
+            if (platform === 'x') targetUrl = `https://x.com/${user}`;
+            else if (platform === 'instagram') targetUrl = `https://instagram.com/${user}`;
+            else if (platform === 'tiktok') targetUrl = `https://tiktok.com/@${user}`;
+            else if (platform === 'telegram') targetUrl = `https://t.me/${user}`;
+            else if (platform === 'github') targetUrl = `https://github.com/${user}`;
+            else if (platform === 'reddit') targetUrl = `https://reddit.com/user/${user}`;
+            else targetUrl = `https://discord.com/users/${user}`;
+
+            const waybackLink = `https://web.archive.org/web/*/${targetUrl}`;
+            const googleDork = `https://www.google.com/search?q=site:${encodeURIComponent(new URL(targetUrl).hostname)}+"${encodeURIComponent(user)}"`;
+
+            box.innerHTML = `
+                <a class="dork-item" href="${targetUrl}" target="_blank" rel="noopener noreferrer">
+                    <span>${t.dorkProfile}</span>
+                    <span>↗</span>
+                </a>
+                <a class="dork-item" href="${waybackLink}" target="_blank" rel="noopener noreferrer">
+                    <span>${t.dorkArch}</span>
+                    <span>↗</span>
+                </a>
+                <a class="dork-item" href="${googleDork}" target="_blank" rel="noopener noreferrer">
+                    <span>${t.dorkGoogle}</span>
+                    <span>↗</span>
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>
