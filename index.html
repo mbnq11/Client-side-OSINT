@@ -344,7 +344,7 @@
                 <span id="btnLookupText">تحليل الحساب</span>
             </button>
         </div>
-        <div class="input-hint" id="inputHint">💡 يمكنك كتابة اسم المستخدم، لصق رابط الحساب كاملاً، أو إدخال رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.</div>
+        <div class="input-hint" id="inputHint">💡 اكتب اسم المستخدم (Username)، الصق الرابط كاملاً، أو رقم المعرّف الرقمي (User ID).</div>
 
         <div class="result-card" id="resultCard">
             <div class="profile-header">
@@ -396,7 +396,7 @@
                 securityText: 'فحص مصادر مفتوحة OSINT بدون سيرفر',
                 btnLookupText: 'تحليل الحساب',
                 inputPlaceholder: 'اكتب اليوزر (مثال: 5opk) أو الصق الرابط كاملاً...',
-                inputHint: '💡 يمكنك كتابة اسم المستخدم، لصق رابط الحساب كاملاً، أو إدخال رقم الـ User ID المكون من 19 خانة لاستخراج لحظة الإنشاء بالثواني.',
+                inputHint: '💡 اكتب اسم المستخدم (Username)، الصق الرابط كاملاً، أو رقم المعرّف الرقمي (User ID).',
                 lblCreatedAt: 'تاريخ وساعة الإنشاء الدقيقة',
                 lblAge: 'عمر الحساب التقديري',
                 lblLocation: 'الموقع والمنطقة الإقليمية',
@@ -417,7 +417,7 @@
                 securityText: '100% Client-Side Open-Source Intelligence',
                 btnLookupText: 'Analyze Profile',
                 inputPlaceholder: 'Enter username (e.g. 5opk) or full URL...',
-                inputHint: '💡 Enter username, paste full profile URL, or input numeric User ID to calculate registration epoch mathematically.',
+                inputHint: '💡 Enter username, paste full profile URL, or input numeric User ID.',
                 lblCreatedAt: 'Exact Account Creation Date',
                 lblAge: 'Estimated Account Age',
                 lblLocation: 'Location & Region Gate',
@@ -452,7 +452,6 @@
             document.getElementById('lblUserId').innerText = t.lblUserId;
         }
 
-        // استخراج اسم المستخدم النظيف حتى لو تم إدخال رابط كامل
         function extractCleanUsername(input) {
             let clean = input.trim();
             clean = clean.replace(/^(https?:\/\/)?(www\.)?tiktok\.com\/@?/, '');
@@ -475,7 +474,6 @@
             return `${days} ${t.days}`;
         }
 
-        // فك تشفير أول 32 بت كـ Unix Epoch
         function decodeTikTokId(numericId) {
             try {
                 const idBigInt = BigInt(numericId);
@@ -511,7 +509,6 @@
 
             buildDorks(query);
 
-            // 1. إذا كان المدخل رقم ID مباشر
             if (/^\d{16,21}$/.test(query)) {
                 const date = decodeTikTokId(query);
                 if (date) {
@@ -527,8 +524,8 @@
                 return;
             }
 
-            // 2. الاستعلام المباشر عبر TikWM API العام والمجاني
             try {
+                // استعلام عبر TikWM API العام والمباشر
                 const res = await fetch(`https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(query)}`);
                 const json = await res.json();
 
